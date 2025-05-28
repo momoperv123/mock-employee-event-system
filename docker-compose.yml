@@ -1,0 +1,118 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  producer:
+    build: .
+    depends_on:
+      - kafka
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  hr-consumer:
+    build: .
+    command: python consumers/hr_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  payroll-consumer:
+    build: .
+    command: python consumers/payroll_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./payroll_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  audit-consumer:
+    build: .
+    command: python consumers/audit_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./payroll_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  security-consumer:
+    build: .
+    command: python consumers/security_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  compliance-consumer:
+    build: .
+    command: python consumers/compliance_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  dlq-consumer:
+    build: .
+    command: python consumers/dlq_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./payroll_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  engineering-consumer:
+    build: .
+    command: python consumers/engineering_consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  dlq-replayer:
+    build: .
+    command: python dlq_replayer.py
+    volumes:
+      - ./payroll_data:/data
+    environment:
+      - PYTHONBUFFERED=1
+      
+volumes:
+  payroll_data:
