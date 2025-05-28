@@ -1,6 +1,5 @@
 import json
 from kafka import KafkaProducer
-import time
 import logging
 import os
 

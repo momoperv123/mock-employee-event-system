@@ -5,7 +5,7 @@ import json
 import random
 import time
 
-if os.path.exists("/data/payroll_state.json"):
+if os.path.exists("/data/payroll_state.json"): 
     with open("/data/payroll_state.json", "r") as f: payroll_db = json.load(f)
 else: payroll_db = {}
 

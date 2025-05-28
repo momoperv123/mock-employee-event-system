@@ -86,7 +86,6 @@ def generate_employees():
         employee_title = random.choice(titles)
         employee_dept = random.choice(departments)
         employee_loc = random.choice(locations)
-        
         if employee_id in employee_db: continue
         employee_db[employee_id] = {
             "title": employee_title,
