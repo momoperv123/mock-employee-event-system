@@ -30,7 +30,7 @@ This project simulates an event-driven architecture using Kafka for handling emp
 ## Observability Dashboard
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000
-  - Login: admin / `admin
+  - Login: admin / admin
   - Add Prometheus as a data source (http://prometheus:9090)
 
 ## Requirements
