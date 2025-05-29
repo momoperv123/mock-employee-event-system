@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Docker volumes and logs
+*.log
+*.pid
+*.sock
+
+# Data volumes
+/data/
+*.jsonl
+payroll_state.json
+audit_log.json
+dlq_log.jsonl
+dlq_replayed.jsonl
+
+# Virtual Environments
+venv/
+
+# VS Code / JetBrains IDE settings
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Env files
+.env
+
+# OS-generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
