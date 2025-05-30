@@ -2,6 +2,30 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'api'
+  - job_name: 'fastapi-app'
     static_configs:
       - targets: ['api:8000']
+
+  - job_name: 'audit-consumer'
+    static_configs:
+      - targets: ['audit-consumer:8001']
+  
+  - job_name: 'compliance-consumer'
+    static_configs:
+      - targets: ['compliance-consumer:8002']
+
+  - job_name: 'engineering-consumer'
+    static_configs:
+      - targets: ['engineering-consumer:8003']
+
+  - job_name: 'hr-consumer'
+    static_configs:
+      - targets: ['hr-consumer:8004']
+  
+  - job_name: 'payroll-consumer'
+    static_configs:
+      - targets: ['payroll-consumer:8005']
+
+  - job_name: 'security-consumer'
+    static_configs:
+      - targets: ['security-consumer:8006']

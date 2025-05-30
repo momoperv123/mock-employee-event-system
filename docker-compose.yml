@@ -39,6 +39,8 @@ services:
     restart: on-failure
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8004:8004" 
 
   payroll-consumer:
     build: .
@@ -51,6 +53,8 @@ services:
       - ./payroll_data:/data
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8005:8005" 
   
   audit-consumer:
     build: .
@@ -63,6 +67,8 @@ services:
       - ./payroll_data:/data
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8001:8001" 
 
   security-consumer:
     build: .
@@ -73,6 +79,8 @@ services:
     restart: on-failure
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8006:8006" 
   
   compliance-consumer:
     build: .
@@ -83,6 +91,8 @@ services:
     restart: on-failure
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8002:8002" 
   
   dlq-consumer:
     build: .
@@ -105,6 +115,8 @@ services:
     restart: on-failure
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8003:8003" 
   
   dlq-replayer:
     build: .

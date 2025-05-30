@@ -4,6 +4,13 @@ from kafka import KafkaConsumer, KafkaProducer
 import json
 import random
 import time
+from prometheus_client import Counter, start_http_server
+
+PROCESSED_COUNTER = Counter("processed_events_total", "Total successfully processed events", ["consumer"])
+FAILURE_COUNTER = Counter("processing_failures_total", "Total processing failures", ["consumer"])
+DLQ_COUNTER = Counter("dlq_events_total", "Events sent to DLQ", ["consumer"])
+
+start_http_server(8005)
 
 if os.path.exists("/data/payroll_state.json"): 
     with open("/data/payroll_state.json", "r") as f: payroll_db = json.load(f)
@@ -26,8 +33,10 @@ def process_message(update):
                 if update['employee_id'] not in payroll_db: payroll_db[update['employee_id']] = {update['field_changed']: update['new_value']}
                 else: payroll_db[update['employee_id']][update['field_changed']] = update['new_value']
                 with open("/data/payroll_state.json", "w") as f: json.dump(payroll_db, f, indent=2)
+                PROCESSED_COUNTER.labels(consumer="payroll").inc()
             else: logging.info(f"Non-payroll update ignored for Employee {update['employee_id']}: {update['field_changed']} changed")
         except Exception as e:
+            FAILURE_COUNTER.labels(consumer="payroll").inc()
             last_exception = e
             logging.error(f"[Retry {attempt}] Failed to process message: {e}")
             time.sleep(1)
@@ -37,6 +46,7 @@ def process_message(update):
         "consumer": "payroll_consumer",
         "timestamp": time.time()
     }
+    DLQ_COUNTER.labels(consumer="payroll").inc()
     logging.warning("[DLQ] Sending event to DLQ")
     producer.send("employee_dlq", value=dlq_event)
 

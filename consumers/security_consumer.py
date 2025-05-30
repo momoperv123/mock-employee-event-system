@@ -3,6 +3,13 @@ from kafka import KafkaConsumer, KafkaProducer
 import json
 import random
 import time
+from prometheus_client import Counter, start_http_server
+
+PROCESSED_COUNTER = Counter("processed_events_total", "Total successfully processed events", ["consumer"])
+FAILURE_COUNTER = Counter("processing_failures_total", "Total processing failures", ["consumer"])
+DLQ_COUNTER = Counter("dlq_events_total", "Events sent to DLQ", ["consumer"])
+
+start_http_server(8006)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,7 +30,9 @@ def process_message(update):
         try:
             if random.random() < 0.1: raise Exception("Simulated processing failure")
             logging.info(f"[SECURITY SYSTEM] Processing update for Employee ID {update['employee_id']}: {update['field_changed']} changes from '{update['old_value']}' to '{update['new_value']}'")
+            PROCESSED_COUNTER.labels(consumer="security").inc()
         except Exception as e:
+            FAILURE_COUNTER.labels(consumer="security").inc()
             last_exception = e
             logging.error(f"[Retry {attempt}] Failed to process message: {e}")
             time.sleep(1)
@@ -33,6 +42,7 @@ def process_message(update):
         "consumer": "security_consumer",
         "timestamp": time.time()
     }
+    DLQ_COUNTER.labels(consumer="security").inc()
     logging.warning("[DLQ] Sending event to DLQ")
     producer.send("employee_dlq", value=dlq_event)
 
