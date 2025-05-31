@@ -1,13 +1,12 @@
+from utils.logging_config import *
+from utils.kafka_helpers import create_kafka_producer
 import json
-from kafka import KafkaProducer
 import logging
 import os
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler()]
-)
+logging_config()
+
+producer = create_kafka_producer()
 
 DLQ_LOG_PATH = "/data/dlq_log.jsonl"
 REPLAYED_PATH = "/data/dlq_replayed.jsonl"
@@ -21,11 +20,6 @@ if os.path.exists(REPLAYED_PATH):
                 key = json.dumps(event["original_event"], sort_keys=True)
                 replayed_hashes.add(hash(key))
             except Exception: continue
-
-producer = KafkaProducer(
-    bootstrap_servers='kafka:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
 
 if __name__ == "__main__":
     with open(DLQ_LOG_PATH, 'r') as f: dlq_events = [json.loads(line) for line in f if line.strip()]
