@@ -1,26 +1,14 @@
-import logging
-from kafka import KafkaConsumer, KafkaProducer
-import json
+from utils.logging_config import *
+from utils.kafka_helpers import *
+from utils.metrics import *
 import random
 import time
-from prometheus_client import Counter, start_http_server
 
-PROCESSED_COUNTER = Counter("processed_events_total", "Total successfully processed events", ["consumer"])
-FAILURE_COUNTER = Counter("processing_failures_total", "Total processing failures", ["consumer"])
-DLQ_COUNTER = Counter("dlq_events_total", "Events sent to DLQ", ["consumer"])
+logging_config()
 
-start_http_server(8003)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-
-producer = KafkaProducer(
-    bootstrap_servers='kafka:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
+metrics = init_metrics(8003, "engineering-group")
+producer = create_kafka_producer()
+consumer = create_kafka_consumer()
 
 MAX_RETRIES = 3
 
@@ -30,10 +18,10 @@ def process_message(update):
         try:
             if random.random() < 0.1: raise Exception("Simulated processing failure")
             if update["field_changed"] in ["title", "location"] and update.get("department") == "Engineering": 
-                PROCESSED_COUNTER.labels(consumer="engineering").inc()
+                metrics["processed"].inc()
                 logging.info(f"[ENG TEAM] Update detected: {update}")
         except Exception as e:
-            FAILURE_COUNTER.labels(consumer="engineering").inc()
+            metrics["failures"].inc()
             last_exception = e
             logging.error(f"[Retry {attempt}] Failed to process message: {e}")
             time.sleep(1)
@@ -43,26 +31,9 @@ def process_message(update):
         "consumer": "engineering_consumer",
         "timestamp": time.time()
     }
-    DLQ_COUNTER.labels(consumer="engineering").inc()
+    metrics["dlq"].inc()
     logging.warning("[DLQ] Sending event to DLQ")
     producer.send("employee_dlq", value=dlq_event)
-
-def create_consumer():
-    for _ in range(10):
-        try:
-            return KafkaConsumer(
-                'employee_updates',
-                bootstrap_servers='kafka:9092',
-                auto_offset_reset='earliest',
-                group_id='engineering-group',
-                value_deserializer=lambda v: json.loads(v.decode('utf-8'))
-            )
-        except Exception as e:
-            logging.warning(f"[RETRYING] Kafka broker not ready yet: {e}")
-            time.sleep(3)
-    raise Exception("Kafka broker not reachable after retries.")
-
-consumer = create_consumer()
 
 logging.info("Engineering Consumer is live...")
 

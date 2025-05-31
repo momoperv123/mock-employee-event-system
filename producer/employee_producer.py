@@ -1,28 +1,12 @@
-from kafka import KafkaProducer
-import json
+from utils.logging_config import *
+from utils.kafka_helpers import *
+from utils.metrics import *
 import time
 import logging
 import random
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-
-def create_producer():
-    for _ in range(10):
-        try:
-            return KafkaProducer(
-                bootstrap_servers='kafka:9092',
-                value_serializer=lambda v: json.dumps(v).encode('utf-8')
-            )
-        except:
-            print("[RETRYING] Kafka broker not ready yet...")
-            time.sleep(3)
-    raise Exception("Kafka broker not reachable after retries.")
-
-producer = create_producer()
+logging_config()
+producer = create_kafka_producer()
 
 employee_db = {}
 
