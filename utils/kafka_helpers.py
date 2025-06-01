@@ -16,10 +16,10 @@ def create_kafka_consumer(topic, group_id):
         except Exception as e:
             logging.warning(f"[RETRYING] Kafka broker not ready: {e}")
             time.sleep(3)
-        raise Exception("Kafka broker not reachable after retries")
+    raise Exception("Kafka broker not reachable after retries")
 
 def create_kafka_producer():
     return KafkaProducer(
-        bootstrap_servers='Kafka:9092',
-        value_deserializer=lambda v: json.loads(v.decode('utf-8'))
+        bootstrap_servers='kafka:9092',
+        value_serializer=lambda v: json.loads(v.decode('utf-8'))
     )

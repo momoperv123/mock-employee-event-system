@@ -23,4 +23,5 @@ tzdata==2025.2
 uvicorn==0.34.2
 prometheus_client
 prometheus_fastapi_instrumentator
+jsonschema
 

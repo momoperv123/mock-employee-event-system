@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "EmployeeUpdate",
+    "type": "object",
+    "required": ["employee_id", "field_changed", "old_value", "new_value"],
+    "properties": {
+        "employee_id": {
+            "type": "string"
+        },
+        "field_changed": {
+            "type": "string"
+        },
+        "old_value": {
+            "type": ["string", "number", "null"]
+        },
+        "new_value": {
+            "type": ["string", "number", "null"]
+        }
+    },
+    "additionalProperties": true
+}

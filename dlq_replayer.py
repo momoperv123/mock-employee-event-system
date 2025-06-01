@@ -1,10 +1,9 @@
-from utils.logging_config import *
+from utils.logging_config import configure_logger
 from utils.kafka_helpers import create_kafka_producer
 import json
-import logging
 import os
 
-logging_config()
+logging = configure_logger()
 
 producer = create_kafka_producer()
 

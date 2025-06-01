@@ -1,11 +1,12 @@
-from utils.logging_config import *
-from utils.kafka_helpers import *
-from utils.metrics import *
+from utils.logging_config import configure_logger
+from utils.kafka_helpers import create_kafka_consumer, create_kafka_producer
+from utils.metrics import init_metrics
+from utils.schema_validator import validate_event
 import json
 import random
 import time
 
-logging_config()
+logging = configure_logger()
 
 metrics = init_metrics(8001, "audit")
 producer = create_kafka_producer()
@@ -41,4 +42,8 @@ logging.info("Audit Consumer listening for employee updates...")
 
 for message in consumer:
     update = message.value
+    is_valid, error = validate_event(update)
+    if not is_valid:
+        logging.error(f"[INVALID EVENT] {error}")
+        continue
     process_message(update)

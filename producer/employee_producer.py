@@ -1,11 +1,10 @@
-from utils.logging_config import *
-from utils.kafka_helpers import *
-from utils.metrics import *
+from utils.logging_config import configure_logger
+from utils.kafka_helpers import create_kafka_producer
 import time
-import logging
 import random
 
-logging_config()
+logging = configure_logger()
+
 producer = create_kafka_producer()
 
 employee_db = {}

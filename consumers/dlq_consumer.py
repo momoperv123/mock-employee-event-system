@@ -1,11 +1,10 @@
-from utils.logging_config import *
-from utils.kafka_helpers import *
-from utils.metrics import *
+from utils.logging_config import configure_logger
+from utils.kafka_helpers import create_kafka_consumer
 import json
 
-logging_config()
+logging = configure_logger()
 
-consumer = create_kafka_consumer()
+consumer = create_kafka_consumer("employee_updates", "dlq-events")
 
 logging.info("DLQ Consumer is live...")
 

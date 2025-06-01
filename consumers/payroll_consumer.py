@@ -1,16 +1,17 @@
+from utils.logging_config import configure_logger
+from utils.kafka_helpers import create_kafka_consumer, create_kafka_producer
+from utils.metrics import init_metrics
+from utils.schema_validator import validate_event
 import os
-from utils.logging_config import *
-from utils.kafka_helpers import *
-from utils.metrics import *
 import random
 import json
 import time
 
-logging_config()
+logging = configure_logger()
 
-metrics = init_metrics(8005, "payroll-group")
+metrics = init_metrics(8005, "payroll")
 producer = create_kafka_producer()
-consumer = create_kafka_consumer()
+consumer = create_kafka_consumer("employee_updates", "payroll-group")
 
 if os.path.exists("/data/payroll_state.json"): 
     with open("/data/payroll_state.json", "r") as f: payroll_db = json.load(f)
@@ -49,4 +50,8 @@ logging.info("Payroll Consumer listening for employee updates...")
 
 for message in consumer:
     update = message.value
+    is_valid, error = validate_event(update)
+    if not is_valid:
+        logging.error(f"[INVALID EVENT] {error}")
+        continue
     process_message(update)
