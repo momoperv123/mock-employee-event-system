@@ -11,6 +11,7 @@ This project simulates an event-driven architecture using Kafka for handling emp
 - DLQ Replayer: Deduplicates and retries failed events from disk.
 
 ## Features
+
 - Persistent storage via mounted Docker volumes (/data/)
 - Retry logic for flaky consumers
 - DLQ ingestion with detailed failure logs
@@ -18,8 +19,10 @@ This project simulates an event-driven architecture using Kafka for handling emp
 - Observability with FastAPI, Prometheus, and Grafana
 - Metrics endpoint (`/metrics`) for API instrumentation
 - Pre-configured Grafana dashboard via Docker
+- Schema validation checking for Kafka events
 
 ## API Endpoints
+
 - GET /health — Health check
 - GET /payroll — Current payroll state
 - GET /audit — Audit log
@@ -28,12 +31,14 @@ This project simulates an event-driven architecture using Kafka for handling emp
 - GET /metrics — Prometheus metrics
 
 ## Observability Dashboard
+
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000
   - Login: admin / admin
   - Add Prometheus as a data source (http://prometheus:9090)
 
 ## Requirements
+
 - Docker + Docker Compose
 - Python 3.8+
 - Kafka (runs in container)
